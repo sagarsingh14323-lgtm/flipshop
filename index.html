@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlipShop Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--blue:#2874f0;--bg:#f1f3f6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg)}
+header{background:var(--blue);color:#fff;padding:12px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0}
+.search{flex:1}
+.search input{width:100%;padding:8px;border-radius:4px;border:none}
+.nav{display:flex;justify-content:space-around;background:#fff;border-bottom:1px solid #ddd}
+.nav button{flex:1;padding:10px;border:none;background:#fff}
+.container{padding:10px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:#fff;border-radius:6px;padding:10px}
+.card img{width:100%;border-radius:6px}
+.price{color:#111;font-weight:bold}
+.btn{background:var(--blue);color:#fff;border:none;padding:8px;width:100%;border-radius:4px}
+.hidden{display:none}
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;display:flex;justify-content:space-between;align-items:center}
+.badge{background:var(--blue);color:#fff;border-radius:20px;padding:2px 8px;font-size:12px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>FlipShop Pro</h1>
+  <div class="search"><input id="q" placeholder="Search products…" oninput="render()"></div>
+</header>
+
+<div class="nav">
+  <button onclick="show('home')">Home</button>
+  <button onclick="show('cart')">Cart <span id="cBadge" class="badge">0</span></button>
+  <button onclick="show('orders')">Orders</button>
+</div>
+
+<div id="home" class="container">
+  <div id="grid" class="grid"></div>
+</div>
+
+<div id="cart" class="container hidden">
+  <h3>Your Cart</h3>
+  <div id="cartList"></div>
+</div>
+
+<div id="orders" class="container hidden">
+  <h3>Orders</h3>
+  <p>No orders yet.</p>
+</div>
+
+<div class="footer">
+  <div>Total: ₹<b id="total">0</b></div>
+  <button class="btn" onclick="checkout()">Checkout (COD)</button>
+</div>
+
+<script>
+const products=[
+ {id:1,name:'Smartphone',price:9999,img:'https://via.placeholder.com/300'},
+ {id:2,name:'Headphones',price:1999,img:'https://via.placeholder.com/300'},
+ {id:3,name:'Shoes',price:2499,img:'https://via.placeholder.com/300'},
+ {id:4,name:'Backpack',price:1499,img:'https://via.placeholder.com/300'}
+];
+let cart=[];
+
+function show(id){
+ ['home','cart','orders'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ renderCart();
+}
+
+function render(){
+ const q=document.getElementById('q').value.toLowerCase();
+ const g=document.getElementById('grid'); g.innerHTML='';
+ products.filter(p=>p.name.toLowerCase().includes(q)).forEach(p=>{
+  const d=document.createElement('div'); d.className='card';
+  d.innerHTML=`
+   <img src="${p.img}">
+   <h4>${p.name}</h4>
+   <div class="price">₹${p.price}</div>
+   <button class="btn" onclick="add(${p.id})">Add to Cart</button>`;
+  g.appendChild(d);
+ });
+}
+function add(id){
+ const p=products.find(x=>x.id===id);
+ cart.push(p);
+ document.getElementById('cBadge').innerText=cart.length;
+ renderCart();
+ alert(p.name+' added');
+}
+function renderCart(){
+ const cl=document.getElementById('cartList'); cl.innerHTML='';
+ let t=0;
+ cart.forEach((p,i)=>{
+  t+=p.price;
+  const r=document.createElement('div');
+  r.innerHTML=`${p.name} - ₹${p.price} <button onclick="remove(${i})">Remove</button>`;
+  cl.appendChild(r);
+ });
+ document.getElementById('total').innerText=t;
+}
+function remove(i){
+ cart.splice(i,1);
+ document.getElementById('cBadge').innerText=cart.length;
+ renderCart();
+}
+function checkout(){
+ if(!cart.length){alert('Cart empty');return;}
+ alert('Order placed (Cash on Delivery)');
+ cart=[]; renderCart(); document.getElementById('cBadge').innerText=0;
+}
+render();
+</script>
+
+</body>
+</html>
