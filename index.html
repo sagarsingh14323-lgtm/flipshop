@@ -4,115 +4,268 @@
 <meta charset="UTF-8">
 <title>FlipShop Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-:root{--blue:#2874f0;--bg:#f1f3f6}
+:root{
+  --blue:#2874f0;
+  --orange:#ff9f00;
+  --bg:#f1f3f6;
+  --card:#fff;
+  --text:#000;
+}
+.dark{
+  --bg:#121212;
+  --card:#1e1e1e;
+  --text:#fff;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg)}
-header{background:var(--blue);color:#fff;padding:12px 10px;display:flex;align-items:center;gap:10px}
-header h1{font-size:18px;margin:0}
-.search{flex:1}
-.search input{width:100%;padding:8px;border-radius:4px;border:none}
-.nav{display:flex;justify-content:space-around;background:#fff;border-bottom:1px solid #ddd}
-.nav button{flex:1;padding:10px;border:none;background:#fff}
-.container{padding:10px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.card{background:#fff;border-radius:6px;padding:10px}
-.card img{width:100%;border-radius:6px}
-.price{color:#111;font-weight:bold}
-.btn{background:var(--blue);color:#fff;border:none;padding:8px;width:100%;border-radius:4px}
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
 .hidden{display:none}
-.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;display:flex;justify-content:space-between;align-items:center}
-.badge{background:var(--blue);color:#fff;border-radius:20px;padding:2px 8px;font-size:12px}
+
+/* HEADER */
+header{
+  background:var(--blue);
+  color:#fff;
+  padding:10px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+header h1{font-size:18px;margin:0}
+header input{
+  flex:1;
+  padding:8px;
+  border:none;
+  border-radius:4px;
+}
+
+/* CATEGORY */
+.categories{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  background:var(--card);
+  overflow-x:auto;
+}
+.categories div{
+  background:#eee;
+  padding:6px 12px;
+  border-radius:20px;
+  white-space:nowrap;
+}
+
+/* PRODUCTS */
+.products{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  padding:10px;
+}
+.card{
+  background:var(--card);
+  border-radius:6px;
+  padding:8px;
+}
+.card img{
+  width:100%;
+  height:120px;
+  object-fit:contain;
+}
+.card h4{margin:5px 0;font-size:14px}
+.price{font-weight:bold}
+.btn{
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  padding:6px;
+  width:100%;
+  border-radius:4px;
+  margin-top:4px;
+}
+.wish{
+  border:1px solid #ccc;
+  padding:5px;
+  width:100%;
+  margin-top:4px;
+}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.popup .box{
+  background:var(--card);
+  padding:15px;
+  width:90%;
+  border-radius:8px;
+}
+
+/* BOTTOM */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--card);
+  border-top:1px solid #ccc;
+  display:flex;
+  justify-content:space-around;
+  padding:8px 0;
+}
+.cartbar{
+  position:fixed;
+  bottom:48px;
+  left:0;
+  right:0;
+  background:var(--card);
+  border-top:1px solid #ccc;
+  padding:8px;
+  display:flex;
+  justify-content:space-between;
+}
+.cartbar button{
+  background:var(--orange);
+  border:none;
+  padding:8px 12px;
+  font-weight:bold;
+}
 </style>
 </head>
 
-<body>
+<body id="body">
 
 <header>
   <h1>FlipShop Pro</h1>
-  <div class="search"><input id="q" placeholder="Search products…" oninput="render()"></div>
+  <input placeholder="Search products…" oninput="render()">
 </header>
 
-<div class="nav">
-  <button onclick="show('home')">Home</button>
-  <button onclick="show('cart')">Cart <span id="cBadge" class="badge">0</span></button>
-  <button onclick="show('orders')">Orders</button>
+<div id="home">
+  <div class="categories">
+    <div>Mobiles</div><div>Fashion</div><div>Electronics</div>
+    <div>Home</div><div>Grocery</div>
+  </div>
+  <div class="products" id="products"></div>
 </div>
 
-<div id="home" class="container">
-  <div id="grid" class="grid"></div>
-</div>
-
-<div id="cart" class="container hidden">
+<div id="cart" class="hidden" style="padding:10px">
   <h3>Your Cart</h3>
+  <input placeholder="Coupon code (SAVE10)" id="coupon">
+  <button onclick="applyCoupon()">Apply</button>
   <div id="cartList"></div>
 </div>
 
-<div id="orders" class="container hidden">
-  <h3>Orders</h3>
-  <p>No orders yet.</p>
+<div id="wishlist" class="hidden" style="padding:10px">
+  <h3>Wishlist</h3>
+  <div id="wishList"></div>
 </div>
 
-<div class="footer">
-  <div>Total: ₹<b id="total">0</b></div>
-  <button class="btn" onclick="checkout()">Checkout (COD)</button>
+<div id="orders" class="hidden" style="padding:10px">
+  <h3>Orders</h3>
+  <p id="orderStatus">No orders yet</p>
+</div>
+
+<div id="profile" class="hidden" style="padding:10px">
+  <h3>Profile</h3>
+  <button onclick="toggleDark()">🌙 Dark Mode</button>
+</div>
+
+<div class="cartbar">
+  <div>Cart: <b id="count">0</b></div>
+  <button onclick="checkout()">Checkout (COD)</button>
+</div>
+
+<nav>
+  <div onclick="show('home')">Home</div>
+  <div onclick="show('cart')">Cart</div>
+  <div onclick="show('wishlist')">❤️</div>
+  <div onclick="show('orders')">Orders</div>
+  <div onclick="show('profile')">Profile</div>
+</nav>
+
+<div id="popup" class="popup hidden">
+  <div class="box">
+    <h3 id="pName"></h3>
+    <p id="pPrice"></p>
+    <button onclick="closePop()">Close</button>
+  </div>
 </div>
 
 <script>
 const products=[
- {id:1,name:'Smartphone',price:9999,img:'https://via.placeholder.com/300'},
- {id:2,name:'Headphones',price:1999,img:'https://via.placeholder.com/300'},
- {id:3,name:'Shoes',price:2499,img:'https://via.placeholder.com/300'},
- {id:4,name:'Backpack',price:1499,img:'https://via.placeholder.com/300'}
+ {n:"Smartphone",p:9999,img:"https://via.placeholder.com/300"},
+ {n:"Headphones",p:1999,img:"https://via.placeholder.com/300"},
+ {n:"Shoes",p:2499,img:"https://via.placeholder.com/300"},
+ {n:"Backpack",p:1499,img:"https://via.placeholder.com/300"}
 ];
-let cart=[];
+let cart=[],wish=[],discount=0;
 
 function show(id){
- ['home','cart','orders'].forEach(x=>document.getElementById(x).classList.add('hidden'));
- document.getElementById(id).classList.remove('hidden');
- renderCart();
+ ["home","cart","wishlist","orders","profile"].forEach(x=>{
+  document.getElementById(x).classList.add("hidden");
+ });
+ document.getElementById(id).classList.remove("hidden");
+ renderCart();renderWish();
 }
 
 function render(){
- const q=document.getElementById('q').value.toLowerCase();
- const g=document.getElementById('grid'); g.innerHTML='';
- products.filter(p=>p.name.toLowerCase().includes(q)).forEach(p=>{
-  const d=document.createElement('div'); d.className='card';
-  d.innerHTML=`
-   <img src="${p.img}">
-   <h4>${p.name}</h4>
-   <div class="price">₹${p.price}</div>
-   <button class="btn" onclick="add(${p.id})">Add to Cart</button>`;
-  g.appendChild(d);
+ productsBox.innerHTML="";
+ products.forEach(p=>{
+  productsBox.innerHTML+=`
+   <div class="card">
+    <img src="${p.img}" onclick="detail('${p.n}',${p.p})">
+    <h4>${p.n}</h4>
+    <div class="price">₹${p.p}</div>
+    <button class="btn" onclick="add('${p.n}',${p.p})">Add</button>
+    <button class="wish" onclick="addWish('${p.n}',${p.p})">❤️ Wishlist</button>
+   </div>`;
  });
 }
-function add(id){
- const p=products.find(x=>x.id===id);
- cart.push(p);
- document.getElementById('cBadge').innerText=cart.length;
- renderCart();
- alert(p.name+' added');
+
+function detail(n,p){
+ pName.innerText=n;
+ pPrice.innerText="Price: ₹"+p;
+ popup.classList.remove("hidden");
 }
+function closePop(){popup.classList.add("hidden")}
+
+function add(n,p){cart.push({n,p});count.innerText=cart.length}
+function addWish(n,p){wish.push({n,p});alert("Added to wishlist")}
 function renderCart(){
- const cl=document.getElementById('cartList'); cl.innerHTML='';
- let t=0;
- cart.forEach((p,i)=>{
-  t+=p.price;
-  const r=document.createElement('div');
-  r.innerHTML=`${p.name} - ₹${p.price} <button onclick="remove(${i})">Remove</button>`;
-  cl.appendChild(r);
+ cartList.innerHTML="";
+ let total=0;
+ cart.forEach((c,i)=>{
+  total+=c.p;
+  cartList.innerHTML+=`${c.n} ₹${c.p}<br>`;
  });
- document.getElementById('total').innerText=t;
+ if(discount) total-=discount;
+ cartList.innerHTML+=`<b>Total: ₹${total}</b>`;
 }
-function remove(i){
- cart.splice(i,1);
- document.getElementById('cBadge').innerText=cart.length;
+function renderWish(){
+ wishList.innerHTML="";
+ wish.forEach(w=>wishList.innerHTML+=`${w.n} ₹${w.p}<br>`);
+}
+function applyCoupon(){
+ if(coupon.value==="SAVE10"){discount=100;alert("₹100 OFF applied")}
  renderCart();
 }
 function checkout(){
- if(!cart.length){alert('Cart empty');return;}
- alert('Order placed (Cash on Delivery)');
- cart=[]; renderCart(); document.getElementById('cBadge').innerText=0;
+ if(!cart.length){alert("Cart empty");return;}
+ orderStatus.innerText="Order placed • Preparing • Shipped • Delivered";
+ cart=[];discount=0;count.innerText=0;
+ show("orders");
+}
+function toggleDark(){
+ body.classList.toggle("dark");
 }
 render();
 </script>
