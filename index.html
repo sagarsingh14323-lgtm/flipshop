@@ -8,22 +8,13 @@
 <style>
 :root{
   --blue:#2874f0;
-  --orange:#ff9f00;
-  --bg:#f1f3f6;
-  --card:#fff;
-  --text:#000;
+  --bg:#f5f5f5;
+  --card:#ffffff;
 }
-.dark{
-  --bg:#121212;
-  --card:#1e1e1e;
-  --text:#fff;
-}
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial;
   background:var(--bg);
-  color:var(--text);
 }
 .hidden{display:none}
 
@@ -36,7 +27,7 @@ header{
   gap:10px;
   align-items:center;
 }
-header h1{font-size:18px;margin:0}
+header h2{margin:0}
 header input{
   flex:1;
   padding:8px;
@@ -44,17 +35,17 @@ header input{
   border-radius:4px;
 }
 
-/* CATEGORY */
+/* CATEGORIES */
 .categories{
   display:flex;
-  gap:10px;
+  gap:8px;
   padding:10px;
-  background:var(--card);
   overflow-x:auto;
+  background:#fff;
 }
 .categories div{
   background:#eee;
-  padding:6px 12px;
+  padding:6px 14px;
   border-radius:20px;
   white-space:nowrap;
 }
@@ -68,30 +59,48 @@ header input{
 }
 .card{
   background:var(--card);
-  border-radius:6px;
   padding:8px;
+  border-radius:6px;
 }
 .card img{
   width:100%;
   height:120px;
   object-fit:contain;
 }
-.card h4{margin:5px 0;font-size:14px}
-.price{font-weight:bold}
-.btn{
+.card button{
+  width:100%;
+  padding:6px;
+  margin-top:4px;
+  border:none;
   background:var(--blue);
   color:#fff;
-  border:none;
-  padding:6px;
-  width:100%;
   border-radius:4px;
-  margin-top:4px;
 }
-.wish{
-  border:1px solid #ccc;
-  padding:5px;
-  width:100%;
-  margin-top:4px;
+
+/* CART BAR */
+.cartbar{
+  position:fixed;
+  bottom:48px;
+  left:0;
+  right:0;
+  background:#fff;
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  border-top:1px solid #ccc;
+}
+
+/* BOTTOM NAV */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-around;
+  background:#fff;
+  border-top:1px solid #ccc;
+  padding:8px 0;
 }
 
 /* POPUP */
@@ -102,82 +111,32 @@ header input{
   display:flex;
   align-items:center;
   justify-content:center;
+  z-index:999;
 }
-.popup .box{
-  background:var(--card);
-  padding:15px;
-  width:90%;
+.box{
+  background:#fff;
+  padding:20px;
+  width:80%;
   border-radius:8px;
-}
-
-/* BOTTOM */
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:var(--card);
-  border-top:1px solid #ccc;
-  display:flex;
-  justify-content:space-around;
-  padding:8px 0;
-}
-.cartbar{
-  position:fixed;
-  bottom:48px;
-  left:0;
-  right:0;
-  background:var(--card);
-  border-top:1px solid #ccc;
-  padding:8px;
-  display:flex;
-  justify-content:space-between;
-}
-.cartbar button{
-  background:var(--orange);
-  border:none;
-  padding:8px 12px;
-  font-weight:bold;
 }
 </style>
 </head>
 
-<body id="body">
+<body>
 
 <header>
-  <h1>FlipShop Pro</h1>
-  <input placeholder="Search products…" oninput="render()">
+  <h2>FlipShop Pro</h2>
+  <input placeholder="Search products">
 </header>
 
-<div id="home">
-  <div class="categories">
-    <div>Mobiles</div><div>Fashion</div><div>Electronics</div>
-    <div>Home</div><div>Grocery</div>
-  </div>
-  <div class="products" id="products"></div>
+<div class="categories">
+  <div>Mobiles</div>
+  <div>Fashion</div>
+  <div>Electronics</div>
+  <div>Home</div>
 </div>
 
-<div id="cart" class="hidden" style="padding:10px">
-  <h3>Your Cart</h3>
-  <input placeholder="Coupon code (SAVE10)" id="coupon">
-  <button onclick="applyCoupon()">Apply</button>
-  <div id="cartList"></div>
-</div>
-
-<div id="wishlist" class="hidden" style="padding:10px">
-  <h3>Wishlist</h3>
-  <div id="wishList"></div>
-</div>
-
-<div id="orders" class="hidden" style="padding:10px">
-  <h3>Orders</h3>
-  <p id="orderStatus">No orders yet</p>
-</div>
-
-<div id="profile" class="hidden" style="padding:10px">
-  <h3>Profile</h3>
-  <button onclick="toggleDark()">🌙 Dark Mode</button>
-</div>
+<div id="products" class="products"></div>
 
 <div class="cartbar">
   <div>Cart: <b id="count">0</b></div>
@@ -187,11 +146,11 @@ nav{
 <nav>
   <div onclick="show('home')">Home</div>
   <div onclick="show('cart')">Cart</div>
-  <div onclick="show('wishlist')">❤️</div>
   <div onclick="show('orders')">Orders</div>
   <div onclick="show('profile')">Profile</div>
 </nav>
 
+<!-- POPUP -->
 <div id="popup" class="popup hidden">
   <div class="box">
     <h3 id="pName"></h3>
@@ -207,28 +166,27 @@ const products=[
  {n:"Shoes",p:2499,img:"https://via.placeholder.com/300"},
  {n:"Backpack",p:1499,img:"https://via.placeholder.com/300"}
 ];
-let cart=[],wish=[],discount=0;
 
-function show(id){
- ["home","cart","wishlist","orders","profile"].forEach(x=>{
-  document.getElementById(x).classList.add("hidden");
- });
- document.getElementById(id).classList.remove("hidden");
- renderCart();renderWish();
-}
+let cart=0;
 
-function render(){
- productsBox.innerHTML="";
- products.forEach(p=>{
-  productsBox.innerHTML+=`
-   <div class="card">
-    <img src="${p.img}" onclick="detail('${p.n}',${p.p})">
-    <h4>${p.n}</h4>
-    <div class="price">₹${p.p}</div>
-    <button class="btn" onclick="add('${p.n}',${p.p})">Add</button>
-    <button class="wish" onclick="addWish('${p.n}',${p.p})">❤️ Wishlist</button>
-   </div>`;
- });
+const box=document.getElementById("products");
+const popup=document.getElementById("popup");
+const pName=document.getElementById("pName");
+const pPrice=document.getElementById("pPrice");
+
+products.forEach(p=>{
+ box.innerHTML+=`
+ <div class="card">
+   <img src="${p.img}" onclick="detail('${p.n}',${p.p})">
+   <h4>${p.n}</h4>
+   <b>₹${p.p}</b>
+   <button onclick="add()">Add to Cart</button>
+ </div>`;
+});
+
+function add(){
+ cart++;
+ document.getElementById("count").innerText=cart;
 }
 
 function detail(n,p){
@@ -236,38 +194,14 @@ function detail(n,p){
  pPrice.innerText="Price: ₹"+p;
  popup.classList.remove("hidden");
 }
-function closePop(){popup.classList.add("hidden")}
 
-function add(n,p){cart.push({n,p});count.innerText=cart.length}
-function addWish(n,p){wish.push({n,p});alert("Added to wishlist")}
-function renderCart(){
- cartList.innerHTML="";
- let total=0;
- cart.forEach((c,i)=>{
-  total+=c.p;
-  cartList.innerHTML+=`${c.n} ₹${c.p}<br>`;
- });
- if(discount) total-=discount;
- cartList.innerHTML+=`<b>Total: ₹${total}</b>`;
+function closePop(){
+ popup.classList.add("hidden");
 }
-function renderWish(){
- wishList.innerHTML="";
- wish.forEach(w=>wishList.innerHTML+=`${w.n} ₹${w.p}<br>`);
-}
-function applyCoupon(){
- if(coupon.value==="SAVE10"){discount=100;alert("₹100 OFF applied")}
- renderCart();
-}
+
 function checkout(){
- if(!cart.length){alert("Cart empty");return;}
- orderStatus.innerText="Order placed • Preparing • Shipped • Delivered";
- cart=[];discount=0;count.innerText=0;
- show("orders");
+ alert("Order placed (Demo COD)");
 }
-function toggleDark(){
- body.classList.toggle("dark");
-}
-render();
 </script>
 
 </body>
